@@ -1,0 +1,91 @@
+name: Publicar en GitHub Pages
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SHOW_PRICING: ${{ vars.SHOW_PRICING || 'true' }}
+      NEXT_PUBLIC_LEADS_ENDPOINT: ${{ vars.LEADS_ENDPOINT }}
+      NEXT_PUBLIC_WHATSAPP_NUMBER: ${{ vars.WHATSAPP_NUMBER }}
+      NEXT_PUBLIC_PHONE: ${{ vars.PHONE }}
+      NEXT_PUBLIC_EMAIL: ${{ vars.EMAIL }}
+      NEXT_PUBLIC_ADDRESS: ${{ vars.ADDRESS }}
+      NEXT_PUBLIC_INSTAGRAM_URL: ${{ vars.INSTAGRAM_URL }}
+      NEXT_PUBLIC_FACEBOOK_URL: ${{ vars.FACEBOOK_URL }}
+      NEXT_PUBLIC_CLAIMS_BOOK_URL: ${{ vars.CLAIMS_BOOK_URL }}
+      NEXT_PUBLIC_GA_ID: ${{ vars.GA_ID }}
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.TURNSTILE_SITE_KEY }}
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v6
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Resolver URL pública y base path
+        env:
+          CUSTOM_DOMAIN: ${{ vars.CUSTOM_DOMAIN }}
+          CONFIGURED_SITE_URL: ${{ vars.SITE_URL }}
+          DEFAULT_SITE_URL: https://miguelcordovar.github.io/centrobienestaradultomayor
+          DEFAULT_BASE_PATH: /centrobienestaradultomayor
+        run: |
+          if [[ "$CUSTOM_DOMAIN" == "true" ]]; then
+            if [[ -z "$CONFIGURED_SITE_URL" ]]; then
+              echo "La variable SITE_URL es obligatoria cuando CUSTOM_DOMAIN=true."
+              exit 1
+            fi
+            echo "NEXT_PUBLIC_BASE_PATH=" >> "$GITHUB_ENV"
+            echo "NEXT_PUBLIC_SITE_URL=${CONFIGURED_SITE_URL%/}" >> "$GITHUB_ENV"
+          else
+            echo "NEXT_PUBLIC_BASE_PATH=$DEFAULT_BASE_PATH" >> "$GITHUB_ENV"
+            echo "NEXT_PUBLIC_SITE_URL=${CONFIGURED_SITE_URL:-$DEFAULT_SITE_URL}" >> "$GITHUB_ENV"
+          fi
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Validar código
+        run: |
+          npm run lint
+          npm run typecheck
+          npm test
+
+      - name: Generar sitio estático
+        run: npm run build
+
+      - name: Evitar procesamiento de Jekyll
+        run: touch out/.nojekyll
+
+      - name: Subir artefacto de Pages
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publicar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

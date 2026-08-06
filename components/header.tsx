@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Menu, X, MessageCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { track } from "./analytics";
-import { whatsappHref } from "@/lib/config";
+import { assetPath, whatsappHref } from "@/lib/config";
 
 const links = [
   ["Inicio", "#inicio"],
@@ -32,7 +32,7 @@ export function Header() {
         <Link href="#inicio" aria-label="VivaMayor, ir al inicio">
           <Image
             className="nav-logo"
-            src="/logo-vivamayor.webp"
+            src={assetPath("/logo-vivamayor.webp")}
             alt="VivaMayor Centro de Bienestar"
             width={340}
             height={180}

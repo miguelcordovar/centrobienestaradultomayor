@@ -2,6 +2,7 @@
 import Image from "next/image";
 import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { assetPath } from "@/lib/config";
 
 export const gallery = [
   [
@@ -62,7 +63,7 @@ export function Gallery() {
             onClick={() => setActive(index)}
           >
             <Image
-              src={`/images/${slug}.webp`}
+              src={assetPath(`/images/${slug}.webp`)}
               alt={`${title} conceptual de VivaMayor: ${caption}`}
               fill
               sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 33vw"
@@ -95,7 +96,7 @@ export function Gallery() {
           </button>
           <div className="lightbox-image">
             <Image
-              src={`/images/${gallery[active][0]}.webp`}
+              src={assetPath(`/images/${gallery[active][0]}.webp`)}
               alt={gallery[active][2]}
               fill
               sizes="90vw"

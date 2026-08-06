@@ -22,7 +22,7 @@ import {
   Users,
   Utensils,
 } from "@/components/icons";
-import { siteConfig, whatsappHref } from "@/lib/config";
+import { assetPath, pagePath, siteConfig, whatsappHref } from "@/lib/config";
 
 const services = [
   [
@@ -160,7 +160,7 @@ export default function Home() {
       <main id="contenido">
         <section className="hero" id="inicio">
           <Image
-            src="/images/hero-vivamayor.webp"
+            src={assetPath("/images/hero-vivamayor.webp")}
             fill
             priority
             quality={55}
@@ -306,7 +306,7 @@ export default function Home() {
                 Solicita un día de experiencia
               </a>
               <Image
-                src="/images/movimiento.webp"
+                src={assetPath("/images/movimiento.webp")}
                 alt="Personas adultas mayores realizando movimientos suaves con acompañamiento profesional"
                 width={720}
                 height={520}
@@ -343,7 +343,7 @@ export default function Home() {
           <div className="container audience-layout">
             <div className="audience-image">
               <Image
-                src="/images/manualidades.webp"
+                src={assetPath("/images/manualidades.webp")}
                 fill
                 sizes="(max-width: 850px) 100vw, 45vw"
                 alt="Personas adultas mayores conversando mientras realizan manualidades"
@@ -544,7 +544,7 @@ function Footer() {
       <div className="container footer-grid">
         <div>
           <Image
-            src="/logo-vivamayor.webp"
+            src={assetPath("/logo-vivamayor.webp")}
             alt="VivaMayor Centro de Bienestar"
             width={300}
             height={150}
@@ -565,8 +565,8 @@ function Footer() {
         </div>
         <div>
           <h2>Información</h2>
-          <a href="/privacidad">Política de privacidad</a>
-          <a href="/terminos">Términos del servicio</a>
+          <a href={pagePath("/privacidad/")}>Política de privacidad</a>
+          <a href={pagePath("/terminos/")}>Términos del servicio</a>
           {siteConfig.claimsBook && (
             <a href={siteConfig.claimsBook}>Libro de reclamaciones</a>
           )}
