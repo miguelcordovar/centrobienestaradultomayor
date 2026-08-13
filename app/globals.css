@@ -336,6 +336,98 @@ summary:focus-visible {
   color: var(--muted);
   margin-bottom: 0;
 }
+.plans-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: stretch;
+  margin-bottom: 1.6rem;
+}
+.plan-card {
+  background: var(--white);
+  border-radius: 16px;
+  padding: 1.2rem;
+  border: 1px solid rgba(38,50,56,0.06);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 420px;
+}
+.plan-featured {
+  border: 2px solid #176B73; /* verde petróleo */
+  box-shadow: 0 12px 28px rgba(23, 107, 115, 0.08);
+}
+.plan-badge {
+  background: #E2603F; /* terracota */
+  color: white;
+  display: inline-block;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 0.78rem;
+  margin-bottom: 0.6rem;
+}
+.plan-price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0.6rem 0 0.8rem 0;
+}
+.price-amount {
+  font-size: 1.28rem;
+  font-weight: 900;
+  color: var(--petrol);
+}
+.price-period {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+.plan-services {
+  list-style: none;
+  padding: 0;
+  margin: 0.6rem 0 0 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.plan-services li {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  color: #263238;
+}
+.plan-actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+.btn.small { padding: 0.45rem 0.8rem; font-size: 0.88rem; }
+
+.compare-section { margin-top: 2rem; }
+.compare-wrapper { display: flex; gap: 1.2rem; align-items: flex-start; }
+.compare-table { overflow-x: auto; flex: 1 1 auto; border: 1px solid var(--line); border-radius: 12px; }
+.compare-table .table-row { display: flex; min-width: 900px; border-bottom: 1px solid #f0f2f1; }
+.compare-table .table-row.header { background: #fff; }
+.compare-table .col { padding: 0.9rem 1rem; flex: 1 0 180px; }
+.compare-table .col.feature { flex: 0 0 220px; font-weight: 800; color: var(--blue); }
+.highlight-col { background: #FAF7F0; border-left: 3px solid #176B73; }
+
+.mobile-compare { display: none; flex-direction: column; gap: 0.5rem; }
+.mobile-compare-result { background: #fff; border-radius: 10px; padding: 0.8rem; margin-top: 0.6rem; border: 1px solid var(--line); }
+
+.personalize { margin-top: 1.4rem; background: var(--cream); padding: 1rem; border-radius: 12px; }
+.addons { columns: 2; gap: 1rem; list-style: disc; margin-left: 1rem; }
+.note { font-size: 0.95rem; color: var(--muted); }
+
+@media (max-width: 900px) {
+  .plans-grid { grid-template-columns: repeat(2, 1fr); }
+  .compare-wrapper { flex-direction: column; }
+  .mobile-compare { display: flex; }
+}
+@media (max-width: 560px) {
+  .plans-grid { grid-template-columns: 1fr; }
+  .plan-card { min-height: auto; }
+  .compare-table { display: none; }
+}
 .icon-bubble {
   display: grid;
   place-items: center;
