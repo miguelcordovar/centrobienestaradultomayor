@@ -13,6 +13,7 @@ const interests = [
   "Día de experiencia",
   "Transporte",
   "Solicitar más información",
+  "Solicitar orientación",
 ];
 export function ContactForm() {
   const [status, setStatus] = useState<

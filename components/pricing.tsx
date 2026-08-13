@@ -1,36 +1,37 @@
 "use client";
-import { Check } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { CheckCircle } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { track } from "./analytics";
 import { siteConfig } from "@/lib/config";
 
-// Label used to highlight the preferred plan. Changeable constant.
-// NOTE: Use "Más solicitado" only when you have evidence from consultations or
-// contracts that justify the label; otherwise change to "Plan recomendado".
-const HIGHLIGHT_LABEL = "Más solicitado";
+// Label used to highlight the recommended plan. Change this constant if
+// evidence (consultas / contrataciones) supports marking another plan.
+// NOTE: Use "Más solicitado" only when you have evidence of demand.
+export const RECOMMENDED_LABEL = "Más solicitado";
 
-type Plan = {
-  id: string;
-  name: string;
-  short: string;
+type PlanDef = {
+  id: string; // internal key
+  title: string;
+  subtitle: string;
   price: string;
   periodicity: string;
-  schedule: string[];
-  services: string[];
+  schedule?: string[];
+  features: string[];
   conditions?: string[];
-  note?: string;
-  featured?: boolean;
+  highlight?: boolean;
+  ctaInterest?: string; // value that ContactForm expects
+  footnote?: string;
 };
 
-const PLANS: Plan[] = [
+const PLANS: PlanDef[] = [
   {
     id: "integral",
-    name: "Vitalia Integral",
-    short: "Acompañamiento completo durante toda la jornada.",
+    title: "Vitalia Integral",
+    subtitle: "Acompañamiento completo durante toda la jornada.",
     price: "S/1,500",
     periodicity: "mensuales",
     schedule: ["Lunes a sábado", "8:00 a. m.–6:00 p. m."],
-    services: [
+    features: [
       "Jornada completa",
       "Actividades físicas, cognitivas y recreativas",
       "Desayuno ligero, almuerzo y merienda",
@@ -41,16 +42,17 @@ const PLANS: Plan[] = [
       "Salidas recreativas programadas",
     ],
     conditions: ["Ahorra S/200 frente a contratar mañana y tarde por separado"],
-    featured: true,
+    highlight: true,
+    ctaInterest: "Vitalia Integral",
   },
   {
     id: "manana",
-    name: "Vitalia Mañana",
-    short: "Una mañana activa, estimulante y acompañada.",
+    title: "Vitalia Mañana",
+    subtitle: "Una mañana activa, estimulante y acompañada.",
     price: "S/850",
     periodicity: "mensuales",
     schedule: ["Lunes a sábado", "8:00 a. m.–1:00 p. m."],
-    services: [
+    features: [
       "Activación física y movilidad",
       "Talleres de memoria",
       "Arte y manualidades",
@@ -61,15 +63,16 @@ const PLANS: Plan[] = [
       "Recordatorio de medicamentos",
       "Comunicación con la familia",
     ],
+    ctaInterest: "Mañana",
   },
   {
     id: "tarde",
-    name: "Vitalia Tarde",
-    short: "Compañía, creatividad y recreación durante la tarde.",
+    title: "Vitalia Tarde",
+    subtitle: "Compañía, creatividad y recreación durante la tarde.",
     price: "S/850",
     periodicity: "mensuales",
     schedule: ["Lunes a sábado", "1:00 p. m.–6:00 p. m."],
-    services: [
+    features: [
       "Música, juegos y actividades sociales",
       "Talleres creativos",
       "Estimulación cognitiva",
@@ -79,15 +82,16 @@ const PLANS: Plan[] = [
       "Recordatorio de medicamentos",
       "Comunicación con la familia",
     ],
+    ctaInterest: "Tarde",
   },
   {
     id: "flexible",
-    name: "Vitalia Flexible",
-    short: "Para familias que necesitan acompañamiento algunos días del mes.",
+    title: "Vitalia Flexible",
+    subtitle: "Para familias que necesitan acompañamiento algunos días del mes.",
     price: "S/600",
     periodicity: "mensuales",
     schedule: ["12 turnos de mañana o tarde al mes"],
-    services: [
+    features: [
       "Elección de mañana o tarde",
       "Actividades correspondientes al turno",
       "Alimentación correspondiente al horario",
@@ -102,15 +106,15 @@ const PLANS: Plan[] = [
       "Los turnos no utilizados no se acumulan al mes siguiente",
       "Los cambios de fecha están sujetos a disponibilidad",
     ],
+    ctaInterest: "Flexible",
   },
   {
     id: "ocasional",
-    name: "Vitalia Ocasional",
-    short: "Una alternativa para necesidades puntuales o para conocer el servicio.",
+    title: "Vitalia Ocasional",
+    subtitle: "Una alternativa para necesidades puntuales o para conocer el servicio.",
     price: "Medio día: S/55 · Día completo: S/90",
     periodicity: "Según disponibilidad",
-    schedule: [],
-    services: [
+    features: [
       "Actividades correspondientes al horario",
       "Alimentación correspondiente al turno",
       "Acompañamiento durante la estancia",
@@ -120,16 +124,15 @@ const PLANS: Plan[] = [
     conditions: [
       "Requiere evaluación inicial",
       "Requiere reserva previa",
-      "Sujeto a disponibilidad",
+      "Está sujeto a disponibilidad",
       "No garantiza una plaza permanente",
     ],
+    ctaInterest: "Día de experiencia",
   },
 ];
 
 export function Pricing() {
-  const ref = useRef<HTMLElement | null>(null);
-  const [compareA, setCompareA] = useState(PLANS[0].id);
-  const [compareB, setCompareB] = useState(PLANS[1].id);
+  const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const node = ref.current;
@@ -143,7 +146,7 @@ export function Pricing() {
           observer.disconnect();
         }
       },
-      { threshold: 0.4 },
+      { threshold: 0.35 },
     );
 
     observer.observe(node);
@@ -152,179 +155,188 @@ export function Pricing() {
 
   if (!siteConfig.showPricing) return null;
 
-  const scrollToForm = (planName: string) => {
-    const form = document.querySelector<HTMLFormElement>(".contact-form");
-    const target = document.querySelector<HTMLElement>(`[data-interest="${planName}"]`);
-    // set select value (the ContactForm listens to clicks with data-interest too)
-    const select = document.querySelector<HTMLSelectElement>("#interest");
-    if (select) select.value = planName;
-    // smooth scroll and focus first invalid or first input
-    if (form) {
-      form.scrollIntoView({ behavior: "smooth", block: "center" });
-      setTimeout(() => {
-        const invalid = form.querySelector<HTMLElement>(":invalid");
-        const first = invalid ?? form.querySelector<HTMLElement>("input, select, textarea, button");
-        first?.focus();
-      }, 500);
-    } else if (target) {
-      target.scrollIntoView({ behavior: "smooth", block: "center" });
+  const openContactFor = (interest: string) => {
+    track("plan_select", { plan: interest });
+    const anchor = document.querySelector<HTMLAnchorElement>("a[href='#contacto']");
+    // Scroll to contact section
+    const contacto = document.getElementById("contacto");
+    if (contacto) {
+      contacto.scrollIntoView({ behavior: "smooth", block: "center" });
+    } else if (anchor) {
+      anchor.click();
     }
-    track("plan_select", { plan: planName });
+    // preselect the interest in the form
+    setTimeout(() => {
+      const select = document.querySelector<HTMLSelectElement>("#interest");
+      if (select) {
+        // Map long names to the form options where needed
+        const mapping: Record<string, string> = {
+          "Vitalia Integral": "Vitalia Integral",
+          "Mañana": "Mañana",
+          "Tarde": "Tarde",
+          "Flexible": "Flexible",
+          "Día de experiencia": "Día de experiencia",
+          "Solicitar orientación": "Solicitar más información",
+        };
+        const v = mapping[interest] ?? interest;
+        select.value = v;
+        // focus first required empty field
+        const first = document.querySelector<HTMLElement>(
+          "#contacto [required]:not([value])",
+        );
+        if (first) first.focus();
+      }
+    }, 300);
   };
 
   return (
-    <section ref={ref} className="section pricing-section" id="plan">
+    <section ref={ref} className="section plans-section" id="plan">
       <div className="container">
         <div className="section-heading compact">
-          <span className="eyebrow">Nuestros planes</span>
-          <h2>Un plan para cada familia</h2>
-          <p>Selecciona la frecuencia y el horario que mejor se adapten a las necesidades de tu familia.</p>
+          <span className="eyebrow">Un plan para cada familia</span>
+          <h2>Selecciona la frecuencia y el horario que mejor se adapten a las necesidades de tu familia.</h2>
         </div>
 
         <div className="plans-grid" role="list">
-          {PLANS.map((plan) => (
+          {PLANS.map((p) => (
             <article
-              key={plan.id}
               role="listitem"
-              className={`plan-card ${plan.featured ? "plan-featured" : ""}`}
-              aria-labelledby={`plan-${plan.id}-title`}
+              key={p.id}
+              className={`plan-card ${p.highlight ? "plan-highlight" : ""}`}
+              aria-label={p.title}
             >
-              {plan.featured && (
-                <div className="plan-badge" aria-hidden="true">{HIGHLIGHT_LABEL}</div>
+              {p.highlight && (
+                <div className="plan-badge" aria-hidden="true">{RECOMMENDED_LABEL}</div>
               )}
               <header>
-                <h3 id={`plan-${plan.id}-title`}>{plan.name}</h3>
-                <p className="plan-short">{plan.short}</p>
+                <h3>{p.title}</h3>
+                <p className="muted">{p.subtitle}</p>
               </header>
-              <div className="plan-price">
-                <div className="price-amount">{plan.price}</div>
-                <div className="price-period">{plan.periodicity}</div>
+              <div className="plan-price" aria-hidden>
+                <strong>{p.price}</strong>
+                <span className="periodicity">{p.periodicity}</span>
               </div>
               <div className="plan-schedule">
-                {plan.schedule.map((s) => (
-                  <div key={s} className="schedule-line">{s}</div>
+                {p.schedule?.map((s) => (
+                  <div key={s} className="schedule-line">
+                    {s}
+                  </div>
                 ))}
               </div>
-              <ul className="plan-services">
-                {plan.services.map((s) => (
-                  <li key={s}>
-                    <Check aria-hidden="true" />
-                    <span>{s}</span>
+              <ul className="plan-features">
+                {p.features.map((f) => (
+                  <li key={f}>
+                    <CheckCircle aria-hidden="true" />
+                    <span>{f}</span>
                   </li>
                 ))}
               </ul>
-              <div className="plan-conditions">
-                {(plan.conditions || []).map((c) => (
-                  <small key={c}>{c}</small>
-                ))}
-              </div>
+              {p.conditions && (
+                <div className="plan-conditions">
+                  {p.conditions.map((c) => (
+                    <div key={c} className="condition-item">
+                      {c}
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="plan-actions">
                 <button
-                  className={`btn ${plan.featured ? "btn-primary" : "btn-light"}`}
-                  onClick={() => scrollToForm(plan.name)}
-                  aria-label={`Solicitar información sobre ${plan.name}`}
-                  data-interest={plan.name}
+                  className={`btn ${p.highlight ? "btn-primary" : "btn-secondary"}`}
+                  onClick={() => openContactFor(p.ctaInterest ?? p.title)}
+                  aria-label={`Solicitar información sobre ${p.title}`}
+                  style={{ minWidth: 160 }}
                 >
                   Solicitar este plan
                 </button>
-                <button
-                  className="btn btn-secondary small"
-                  onClick={() => {
-                    scrollToForm("Solicitar orientación");
-                  }}
-                >
-                  No sé qué plan elegir
-                </button>
+                {!p.highlight && (
+                  <button
+                    className="btn btn-ghost"
+                    onClick={() => openContactFor("Solicitar orientación")}
+                    aria-label={`Solicitar orientación sobre ${p.title}`}
+                  >
+                    No sé qué plan elegir
+                  </button>
+                )}
               </div>
             </article>
           ))}
         </div>
 
-        <div className="compare-section">
+        <div className="compare-block">
           <h3>Compara nuestros planes</h3>
-          <div className="compare-wrapper">
-            <div className="compare-table" role="table" aria-label="Comparador de planes">
-              <div className="table-row header">
-                <div className="col feature">Característica</div>
-                {PLANS.map((p) => (
-                  <div key={p.id} className={`col plan ${p.featured ? "highlight-col" : ""}`}>
-                    <strong>{p.name}</strong>
-                  </div>
-                ))}
-              </div>
-              {[
-                ["Lunes a sábado", (p: Plan) => (p.schedule.length ? (p.schedule.includes("Lunes a sábado") ? "Sí" : p.schedule.join(", ")) : "Según programación")],
-                ["Jornada completa", (p: Plan) => (p.services.includes("Jornada completa") ? "Sí" : "No incluido")],
-                ["Turno de mañana", (p: Plan) => (p.services.some(s=>/mañana/i.test(s)) || p.schedule.join(" ").includes("8:00 a. m." ) ? "Sí" : "No incluido")],
-                ["Turno de tarde", (p: Plan) => (p.services.some(s=>/tarde/i.test(s)) || p.schedule.join(" ").includes("1:00 p. m." ) ? "Sí" : "No incluido")],
-                ["Actividades físicas", (p: Plan) => (p.services.some(s=>/físic/i.test(s)) ? "Sí" : "No incluido")],
-                ["Estimulación cognitiva", (p: Plan) => (p.services.some(s=>/cognit|memoria/i.test(s)) ? "Sí" : "No incluido")],
-                ["Actividades sociales", (p: Plan) => (p.services.some(s=>/social/i.test(s)) ? "Sí" : "No incluido")],
-                ["Alimentación", (p: Plan) => (p.services.some(s=>/Aliment|Desayuno|almuerzo|merienda/i.test(s)) ? "Sí" : "No incluido")],
-                ["Enfermería básica", (p: Plan) => (p.services.includes("Enfermería básica") ? "Sí" : "No incluido")],
-                ["Recordatorio de medicamentos", (p: Plan) => (p.services.some(s=>/medicamentos/i.test(s)) ? "Sí" : "No incluido")],
-                ["Comunicación con la familia", (p: Plan) => (p.services.some(s=>/Comunicación/i.test(s)) ? "Sí" : "No incluido")],
-                ["Salidas programadas", (p: Plan) => (p.services.some(s=>/Salidas|salidas/i.test(s)) ? "Sí" : "No incluido")],
-                ["Reserva de plaza mensual", (p: Plan) => (p.id === "integral" || p.id === "flexible" ? "Sí" : "No incluido")],
-                ["Sujeto a disponibilidad", (p: Plan) => (p.id === "flexible" || p.id === "ocasional" ? "Según programación" : "No")],
-              ].map(([label, fn]) => (
-                <div className="table-row" role="row" key={String(label)}>
-                  <div className="col feature">{String(label)}</div>
+          <div className="compare-table-wrap">
+            <table className="compare-table" role="table">
+              <thead>
+                <tr>
+                  <th scope="col">Característica</th>
                   {PLANS.map((p) => (
-                        <div key={p.id} className="col plan" role="cell">
-                          {String((fn as unknown as (q: Plan) => string)(p))}
-                        </div>
-                      ))}
-                </div>
-              ))}
-            </div>
-
-            <div className="mobile-compare">
-              <label htmlFor="compare-a">Comparar: </label>
-              <select id="compare-a" value={compareA} onChange={(e)=>setCompareA(e.target.value)}>
-                {PLANS.map(p=> <option key={p.id} value={p.id}>{p.name}</option>)}
-              </select>
-              <label htmlFor="compare-b"> con </label>
-              <select id="compare-b" value={compareB} onChange={(e)=>setCompareB(e.target.value)}>
-                {PLANS.map(p=> <option key={p.id} value={p.id}>{p.name}</option>)}
-              </select>
-              <div className="mobile-compare-result">
-                {(() => {
-                  const a = PLANS.find(p=>p.id===compareA)!;
-                  const b = PLANS.find(p=>p.id===compareB)!;
-                  return (
-                    <div>
-                      <h4>{a.name} vs {b.name}</h4>
-                      <ul>
-                        <li>Precio: {a.price} — {b.price}</li>
-                        <li>Horario: {a.schedule.join(" ")} — {b.schedule.join(" ")}</li>
-                        <li>Servicios principales: {a.services.slice(0,3).join(", ")} — {b.services.slice(0,3).join(", ")}</li>
-                      </ul>
-                    </div>
-                  );
-                })()}
-              </div>
-            </div>
+                    <th
+                      key={p.id}
+                      scope="col"
+                      className={p.highlight ? "highlight-col" : undefined}
+                    >
+                      {p.title}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ["Lunes a sábado", "incl", "incl", "incl", "según programación", "según programación"],
+                  ["Jornada completa", "incl", "No incluido", "No incluido", "No incluido", "No incluido"],
+                  ["Turno de mañana", "incl", "incl", "No incluido", "opcional", "opcional"],
+                  ["Turno de tarde", "incl", "No incluido", "incl", "opcional", "opcional"],
+                  ["Actividades físicas", "incl", "incl", "incl", "incl", "incl"],
+                  ["Estimulación cognitiva", "incl", "incl", "incl", "incl", "incl"],
+                  ["Actividades sociales", "incl", "incl", "incl", "incl", "incl"],
+                  ["Alimentación", "incl", "incl", "incl", "incl", "incl"],
+                  ["Enfermería básica", "incl", "incl", "incl", "incl", "incl"],
+                  ["Recordatorio de medicamentos", "incl", "incl", "incl", "incl", "incl"],
+                  ["Comunicación con la familia", "incl", "incl", "incl", "incl", "incl"],
+                  ["Salidas programadas", "incl", "No incluido", "No incluido", "No incluido", "No incluido"],
+                  ["Reserva de plaza mensual", "sí", "sí", "sí", "sujeto a disponibilidad", "sujeto a disponibilidad"],
+                  ["Sujeto a disponibilidad", "No", "No", "No", "Sí", "Sí"],
+                ].map((row) => (
+                  <tr key={String(row[0])}>
+                    <th scope="row">{row[0]}</th>
+                    {row.slice(1).map((cell, i) => (
+                      <td key={i}>
+                        {cell === "incl" ? (
+                          <span className="check">Incluido</span>
+                        ) : cell === "opcional" ? (
+                          <span>Según programación</span>
+                        ) : (
+                          <span className="muted">{cell}</span>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
+        </div>
 
-          <div className="personalize">
-            <h4>Personaliza tu plan</h4>
-            <p>Puedes complementar cualquiera de nuestros planes con servicios adicionales, según evaluación y disponibilidad.</p>
-            <ul className="addons">
-              {[
-                "Transporte",
-                "Consulta geriátrica",
-                "Psicología individual",
-                "Terapia física individual",
-                "Nutrición personalizada",
-                "Dietas especiales",
-                "Acompañamiento individual",
-                "Salidas con entradas o consumos especiales",
-                "Pañales, medicamentos e insumos personales",
-              ].map(s=> <li key={s}>{s}</li>)}
-            </ul>
-            <p className="note">Los servicios adicionales no forman parte del precio mensual y se cotizan por separado.</p>
-          </div>
+        <div className="services-additional">
+          <h4>Personaliza tu plan</h4>
+          <p>Puedes complementar cualquiera de nuestros planes con servicios adicionales, según evaluación y disponibilidad.</p>
+          <ul className="additional-list">
+            {[
+              "Transporte",
+              "Consulta geriátrica",
+              "Psicología individual",
+              "Terapia física individual",
+              "Nutrición personalizada",
+              "Dietas especiales",
+              "Acompañamiento individual",
+              "Salidas con entradas o consumos especiales",
+              "Pañales, medicamentos e insumos personales",
+            ].map((s) => (
+              <li key={s}>{s}</li>
+            ))}
+          </ul>
+          <p className="small-note">Los servicios adicionales no forman parte del precio mensual y se cotizan por separado.</p>
         </div>
       </div>
     </section>

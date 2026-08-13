@@ -548,17 +548,22 @@ function Footer() {
   return (
     <footer>
       <div className="container footer-grid">
-        <div>
-          <Image
-            src={assetPath("/vitalia-centro-bienestar-transparente.png")}
-            alt="Vitalia Centro de Bienestar"
-            width={300}
-            height={150}
-          />
-          <p>{siteConfig.slogan}</p>
+        <div className="footer-brand">
+          <div className="logo-card" aria-hidden>
+            <Image
+              src={assetPath("/vitalia-centro-bienestar-transparente.png")}
+              alt="Vitalia Centro de Bienestar"
+              width={360}
+              height={140}
+              className="footerBrandLogo"
+            />
+          </div>
+          <p className="slogan">Más vida en cada día.</p>
+          <p className="muted">Bienestar, compañía y tranquilidad para las personas mayores y sus familias.</p>
         </div>
-        <div>
-          <h2>Vitalia</h2>
+
+        <div className="footer-visit">
+          <h2>VISÍTANOS</h2>
           {siteConfig.address && <p>{siteConfig.address}</p>}
           <p>Piura, Perú</p>
           <p>{siteConfig.schedule}</p>
@@ -568,11 +573,22 @@ function Footer() {
           {siteConfig.email && (
             <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a>
           )}
+          {typeof whatsappHref !== "undefined" && (
+            <a href={whatsappHref} target="_blank" rel="noreferrer">Solicitar información por WhatsApp</a>
+          )}
         </div>
-        <div>
+
+        <div className="footer-info">
           <h2>Información</h2>
-          <a href={pagePath("/privacidad/")}>Política de privacidad</a>
-          <a href={pagePath("/terminos/")}>Términos del servicio</a>
+          <nav aria-label="Información legal">
+            <a href={pagePath("/privacidad/")}>Política de privacidad</a>
+            <a href={pagePath("/terminos/")}>Términos del servicio</a>
+          </nav>
+          <nav aria-label="Enlaces rápidos">
+            <a href="#preguntas">Preguntas frecuentes</a>
+            <a href="#plan">Planes</a>
+            <a href="#contacto">Contacto</a>
+          </nav>
           {siteConfig.claimsBook && (
             <a href={siteConfig.claimsBook}>Libro de reclamaciones</a>
           )}
@@ -580,6 +596,7 @@ function Footer() {
           {siteConfig.facebook && <a href={siteConfig.facebook}>Facebook</a>}
         </div>
       </div>
+
       <div className="container copyright">
         © {year} Vitalia Centro de Bienestar. Todos los derechos reservados.
       </div>
