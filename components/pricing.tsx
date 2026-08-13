@@ -1,6 +1,9 @@
 "use client";
-import { CheckCircle, Check, X, Calendar } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { Check, X } from "lucide-react";
+import { CalendarDays, Clock3, Utensils, Users } from "@/components/icons";
+import Link from "next/link";
+import PLANS_DATA, { PlanData } from "@/lib/plans";
 import { track } from "./analytics";
 import { siteConfig } from "@/lib/config";
 
@@ -10,96 +13,11 @@ import { siteConfig } from "@/lib/config";
 // Editable label for the highlighted plan. Change to "Más solicitado" later if needed.
 export const RECOMMENDED_LABEL = "Plan recomendado";
 
-type PlanDef = {
-  id: string; // internal key
-  title: string;
-  subtitle: string;
-  price: string;
-  periodicity: string;
-  schedule?: string[];
-  features: string[];
-  conditions?: string[];
-  highlight?: boolean;
-  ctaInterest?: string; // value that ContactForm expects
-  footnote?: string;
-};
-
-const PLANS: PlanDef[] = [
-  {
-    id: "integral",
-    title: "Vitalia Integral",
-    subtitle: "Acompañamiento completo durante toda la jornada.",
-    price: "S/1,500 al mes",
-    periodicity: "Lunes a sábado",
-    schedule: ["8:00 a. m.–6:00 p. m."],
-    features: [
-      "Jornada completa",
-      "Actividades físicas, cognitivas y recreativas",
-      "Desayuno ligero, almuerzo y merienda",
-      "Enfermería básica",
-      "Recordatorio de medicamentos",
-      "Comunicación con la familia",
-      "Salidas programadas",
-    ],
-    highlight: true,
-    ctaInterest: "Vitalia Integral",
-  },
-  {
-    id: "medio",
-    title: "Vitalia Medio Turno",
-    subtitle: "Turno mañana o tarde según tu preferencia.",
-    price: "S/850 al mes",
-    periodicity: "Lunes a sábado",
-    schedule: ["Mañana: 8:00 a. m.–1:00 p. m.", "Tarde: 1:00 p. m.–6:00 p. m."],
-    features: [
-      "Actividades correspondientes al turno",
-      "Activación física",
-      "Estimulación cognitiva",
-      "Actividades sociales y recreativas",
-      "Alimentación correspondiente al horario",
-      "Enfermería básica",
-      "Recordatorio de medicamentos",
-      "Comunicación con la familia",
-    ],
-    ctaInterest: "Vitalia Medio Turno",
-  },
-  {
-    id: "flexible",
-    title: "Vitalia Flexible",
-    subtitle: "12 medios turnos mensuales; requiere programación.",
-    price: "S/600 al mes",
-    periodicity: "12 turnos al mes",
-    schedule: ["Mañana: 8:00 a. m.–1:00 p. m.", "Tarde: 1:00 p. m.–6:00 p. m."],
-    features: [
-      "Elección de mañana o tarde",
-      "Actividades correspondientes al turno",
-      "Requiere programación anticipada",
-      "Sujeto a disponibilidad",
-    ],
-    ctaInterest: "Vitalia Flexible",
-  },
-  {
-    id: "ocasional",
-    title: "Vitalia Ocasional",
-    subtitle: "Atención mediante reserva; medio turno o día completo.",
-    price: "Medio turno: S/55 · Día completo: S/90",
-    periodicity: "Según reserva",
-    schedule: ["Mañana: 8:00 a. m.–1:00 p. m.", "Tarde: 1:00 p. m.–6:00 p. m.", "Día completo: 8:00 a. m.–6:00 p. m."],
-    features: [
-      "Requiere evaluación inicial",
-      "Requiere reserva previa",
-      "Sujeto a disponibilidad",
-    ],
-    ctaInterest: "Vitalia Ocasional",
-  },
-];
+const PLANS: PlanData[] = PLANS_DATA;
 
 export function Pricing() {
   const ref = useRef<HTMLElement>(null);
   const [selectedShifts, setSelectedShifts] = useState<Record<string, string>>({ medio: "Mañana" });
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalContent, setModalContent] = useState<PlanDef | null>(null);
-  const lastFocused = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const node = ref.current;
@@ -120,17 +38,7 @@ export function Pricing() {
     return () => observer.disconnect();
   }, []);
 
-  // Modal escape handler must be registered unconditionally so hooks order is stable
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && modalOpen) {
-        setModalOpen(false);
-        if (lastFocused.current) lastFocused.current.focus();
-      }
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [modalOpen]);
+
 
   if (!siteConfig.showPricing) return null;
 
@@ -165,19 +73,19 @@ export function Pricing() {
             <article
               role="listitem"
               key={p.id}
-              className={`plan-card ${p.highlight ? "plan-highlight" : ""}`}
-              aria-label={p.title}
+              className={`plan-card ${p.badge ? "plan-highlight" : ""}`}
+              aria-label={p.name}
             >
-              {p.highlight && (
-                <div className="plan-badge" aria-hidden="true">{RECOMMENDED_LABEL}</div>
-              )}
+              <div className="plan-badge" aria-hidden={p.badge ? "false" : "true"}>
+                {p.badge ? RECOMMENDED_LABEL : "\u00A0"}
+              </div>
               <header>
-                <h3>{p.title}</h3>
-                <p className="muted">{p.subtitle}</p>
+                <h3>{p.name}</h3>
+                <p className="muted">{p.shortDescription}</p>
               </header>
               <div className="plan-price" aria-hidden>
                 <strong>{p.price}</strong>
-                <span className="periodicity">{p.periodicity}</span>
+                {p.priceDetail && <span className="periodicity">{p.priceDetail}</span>}
               </div>
               <div className="plan-schedule">
                 {p.schedule?.map((s) => (
@@ -187,12 +95,30 @@ export function Pricing() {
                 ))}
               </div>
               <ul className="plan-features">
-                {p.features.map((f) => (
-                  <li key={f}>
-                    <CheckCircle aria-hidden="true" />
-                    <span>{f}</span>
-                  </li>
-                ))}
+                <li>
+                  <CalendarDays aria-hidden className="ic" />
+                  <span>{p.basicFeatures[0]}</span>
+                </li>
+                <li>
+                  <Clock3 aria-hidden className="ic" />
+                  <span>
+                    {p.basicFeatures[1]}
+                    {p.id === "medio" && (
+                      <div className="small-schedules">
+                        <div className="muted">Mañana: 8:00 a. m.–1:00 p. m.</div>
+                        <div className="muted">Tarde: 1:00 p. m.–6:00 p. m.</div>
+                      </div>
+                    )}
+                  </span>
+                </li>
+                <li>
+                  <Utensils aria-hidden className="ic" />
+                  <span>{p.basicFeatures[2]}</span>
+                </li>
+                <li>
+                  <Users aria-hidden className="ic" />
+                  <span>{p.basicFeatures[3]}</span>
+                </li>
               </ul>
 
               {p.id === "medio" && (
@@ -220,9 +146,9 @@ export function Pricing() {
 
               <div className="plan-actions">
                 <button
-                  className={`btn ${p.highlight ? "btn-primary" : "btn-secondary"}`}
+                  className={`btn ${p.badge ? "btn-primary" : "btn-secondary"}`}
                   onClick={() => {
-                    let interest = p.ctaInterest ?? p.title;
+                    let interest = p.name;
                     if (p.id === "medio") {
                       const turno = selectedShifts[p.id] ?? "Mañana";
                       interest = `Vitalia Medio Turno – ${turno}`;
@@ -231,53 +157,20 @@ export function Pricing() {
                     }
                     openContactFor(interest);
                   }}
-                  aria-label={`Solicitar ${p.title}`}
+                  aria-label={`Contratar ${p.name}`}
                   style={{ minWidth: 160 }}
                 >
-                  Solicitar
+                  Contratar
                 </button>
-                <button
-                  className="btn btn-ghost"
-                  onClick={(e) => {
-                    lastFocused.current = e.currentTarget as HTMLElement;
-                    setModalContent(p);
-                    setModalOpen(true);
-                  }}
-                  aria-label={`Mayor información sobre ${p.title}`}
-                >
-                  Mayor información
-                </button>
+                <Link href={`/planes/${p.slug}`} className="btn btn-ghost" aria-label={`Ver más sobre ${p.name}`}>
+                  Ver más
+                </Link>
               </div>
             </article>
           ))}
         </div>
 
-        {/* Modal: mayor información */}
-        {modalOpen && modalContent && (
-          <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label={`Información: ${modalContent.title}`}>
-            <div className="modal" role="document">
-              <header>
-                <h3>{modalContent.title}</h3>
-                <button className="modal-close" onClick={() => { setModalOpen(false); if (lastFocused.current) lastFocused.current.focus(); }} aria-label="Cerrar">✕</button>
-              </header>
-              <div className="modal-body">
-                <p className="muted">{modalContent.subtitle}</p>
-                <ul>
-                  {modalContent.features.map((f) => (
-                    <li key={f}>{f}</li>
-                  ))}
-                </ul>
-                {modalContent.conditions && (
-                  <div className="muted">
-                    {modalContent.conditions.map((c) => (
-                      <div key={c}>{c}</div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+        
 
         <div className="compare-block">
           <h3>Compara nuestros planes</h3>
@@ -287,13 +180,13 @@ export function Pricing() {
                 <tr>
                   <th scope="col">Característica</th>
                   {PLANS.map((p) => (
-                    <th
-                      key={p.id}
-                      scope="col"
-                      className={p.highlight ? "highlight-col" : undefined}
-                    >
-                      {p.title}
-                    </th>
+                      <th
+                        key={p.id}
+                        scope="col"
+                        className={p.badge ? "highlight-col" : undefined}
+                      >
+                        {p.name}
+                      </th>
                   ))}
                 </tr>
               </thead>
@@ -307,10 +200,10 @@ export function Pricing() {
                 </tr>
                 <tr>
                   <th scope="row">Frecuencia</th>
-                  <td>{PLANS[0].periodicity}</td>
-                  <td>{PLANS[1].periodicity}</td>
-                  <td>{PLANS[2].periodicity}</td>
-                  <td>{PLANS[3].periodicity}</td>
+                  <td>{PLANS[0].frequency}</td>
+                  <td>{PLANS[1].frequency}</td>
+                  <td>{PLANS[2].frequency}</td>
+                  <td>{PLANS[3].frequency}</td>
                 </tr>
                 <tr>
                   <th scope="row">Horario</th>
@@ -351,7 +244,7 @@ export function Pricing() {
                   <th scope="row">Reserva mensual de plaza</th>
                   <td><Check color="#176B73" size={20} aria-hidden /><span className="visually-hidden">Incluido</span></td>
                   <td><Check color="#176B73" size={20} aria-hidden /><span className="visually-hidden">Incluido</span></td>
-                  <td><Calendar color="#6B7280" size={20} aria-hidden /><span className="visually-hidden">Según programación</span></td>
+                  <td><CalendarDays color="#6B7280" size={20} aria-hidden /><span className="visually-hidden">Según programación</span></td>
                   <td><X color="#6B7280" size={20} aria-hidden /><span className="visually-hidden">No incluido</span></td>
                 </tr>
               </tbody>

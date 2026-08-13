@@ -14,6 +14,7 @@ concurrency:
 
 jobs:
   build:
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     env:
       NEXT_PUBLIC_SHOW_PRICING: ${{ vars.SHOW_PRICING || 'true' }}
@@ -36,6 +37,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
+          cache-dependency-path: package-lock.json
 
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
@@ -88,4 +90,4 @@ jobs:
     steps:
       - name: Publicar en GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
