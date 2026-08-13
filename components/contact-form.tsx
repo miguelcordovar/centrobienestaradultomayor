@@ -7,12 +7,11 @@ import { pagePath } from "@/lib/config";
 type Errors = Record<string, string>;
 const interests = [
   "Vitalia Integral",
-  "Mañana",
-  "Tarde",
-  "Flexible",
-  "Día de experiencia",
-  "Transporte",
-  "Solicitar más información",
+  "Vitalia Medio Turno – Mañana",
+  "Vitalia Medio Turno – Tarde",
+  "Vitalia Flexible",
+  "Vitalia Ocasional – Medio turno",
+  "Vitalia Ocasional – Día completo",
   "Solicitar orientación",
 ];
 export function ContactForm() {
@@ -220,14 +219,14 @@ export function ContactForm() {
       </div>
       <div className="field">
         <label htmlFor="interest">Servicio de interés *</label>
-        <select
-          id="interest"
-          name="interest"
-          defaultValue="Solicitar más información"
-          required
-        >
+        <select id="interest" name="interest" defaultValue="" required>
+          <option value="" disabled>
+            Selecciona un servicio
+          </option>
           {interests.map((item) => (
-            <option key={item}>{item}</option>
+            <option key={item} value={item}>
+              {item}
+            </option>
           ))}
         </select>
         {fieldError("interest")}

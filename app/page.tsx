@@ -200,14 +200,14 @@ export default function Home() {
               <a
                 className="btn btn-gold"
                 href="#contacto"
-                data-interest="Solicitar información"
+                data-interest="Solicitar orientación"
               >
                 Solicita información
               </a>
               <a
                 className="btn btn-light"
                 href="#plan"
-                data-interest="Solicitar información"
+                data-interest="Solicitar orientación"
               >
                 Conoce nuestros planes
               </a>

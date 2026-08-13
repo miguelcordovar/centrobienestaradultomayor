@@ -1,13 +1,14 @@
 "use client";
-import { CheckCircle } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { CheckCircle, Check, X, Calendar } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { track } from "./analytics";
 import { siteConfig } from "@/lib/config";
 
 // Label used to highlight the recommended plan. Change this constant if
 // evidence (consultas / contrataciones) supports marking another plan.
 // NOTE: Use "Más solicitado" only when you have evidence of demand.
-export const RECOMMENDED_LABEL = "Más solicitado";
+// Editable label for the highlighted plan. Change to "Más solicitado" later if needed.
+export const RECOMMENDED_LABEL = "Plan recomendado";
 
 type PlanDef = {
   id: string; // internal key
@@ -28,111 +29,77 @@ const PLANS: PlanDef[] = [
     id: "integral",
     title: "Vitalia Integral",
     subtitle: "Acompañamiento completo durante toda la jornada.",
-    price: "S/1,500",
-    periodicity: "mensuales",
-    schedule: ["Lunes a sábado", "8:00 a. m.–6:00 p. m."],
+    price: "S/1,500 al mes",
+    periodicity: "Lunes a sábado",
+    schedule: ["8:00 a. m.–6:00 p. m."],
     features: [
       "Jornada completa",
       "Actividades físicas, cognitivas y recreativas",
       "Desayuno ligero, almuerzo y merienda",
       "Enfermería básica",
-      "Recordatorio y registro de medicamentos",
-      "Actividades sociales y talleres",
-      "Comunicación periódica con la familia",
-      "Salidas recreativas programadas",
+      "Recordatorio de medicamentos",
+      "Comunicación con la familia",
+      "Salidas programadas",
     ],
-    conditions: ["Ahorra S/200 frente a contratar mañana y tarde por separado"],
     highlight: true,
     ctaInterest: "Vitalia Integral",
   },
   {
-    id: "manana",
-    title: "Vitalia Mañana",
-    subtitle: "Una mañana activa, estimulante y acompañada.",
-    price: "S/850",
-    periodicity: "mensuales",
-    schedule: ["Lunes a sábado", "8:00 a. m.–1:00 p. m."],
+    id: "medio",
+    title: "Vitalia Medio Turno",
+    subtitle: "Turno mañana o tarde según tu preferencia.",
+    price: "S/850 al mes",
+    periodicity: "Lunes a sábado",
+    schedule: ["Mañana: 8:00 a. m.–1:00 p. m.", "Tarde: 1:00 p. m.–6:00 p. m."],
     features: [
-      "Activación física y movilidad",
-      "Talleres de memoria",
-      "Arte y manualidades",
-      "Actividades sociales",
-      "Desayuno ligero",
-      "Alimentación correspondiente al turno",
-      "Enfermería básica",
-      "Recordatorio de medicamentos",
-      "Comunicación con la familia",
-    ],
-    ctaInterest: "Mañana",
-  },
-  {
-    id: "tarde",
-    title: "Vitalia Tarde",
-    subtitle: "Compañía, creatividad y recreación durante la tarde.",
-    price: "S/850",
-    periodicity: "mensuales",
-    schedule: ["Lunes a sábado", "1:00 p. m.–6:00 p. m."],
-    features: [
-      "Música, juegos y actividades sociales",
-      "Talleres creativos",
-      "Estimulación cognitiva",
-      "Movilidad suave",
-      "Alimentación correspondiente al turno",
-      "Enfermería básica",
-      "Recordatorio de medicamentos",
-      "Comunicación con la familia",
-    ],
-    ctaInterest: "Tarde",
-  },
-  {
-    id: "flexible",
-    title: "Vitalia Flexible",
-    subtitle: "Para familias que necesitan acompañamiento algunos días del mes.",
-    price: "S/600",
-    periodicity: "mensuales",
-    schedule: ["12 turnos de mañana o tarde al mes"],
-    features: [
-      "Elección de mañana o tarde",
       "Actividades correspondientes al turno",
+      "Activación física",
+      "Estimulación cognitiva",
+      "Actividades sociales y recreativas",
       "Alimentación correspondiente al horario",
       "Enfermería básica",
       "Recordatorio de medicamentos",
       "Comunicación con la familia",
-      "Programación anticipada de asistencia",
     ],
-    conditions: [
-      "Sujeto a disponibilidad de plazas",
-      "Los turnos deben programarse previamente",
-      "Los turnos no utilizados no se acumulan al mes siguiente",
-      "Los cambios de fecha están sujetos a disponibilidad",
+    ctaInterest: "Vitalia Medio Turno",
+  },
+  {
+    id: "flexible",
+    title: "Vitalia Flexible",
+    subtitle: "12 medios turnos mensuales; requiere programación.",
+    price: "S/600 al mes",
+    periodicity: "12 turnos al mes",
+    schedule: ["Mañana: 8:00 a. m.–1:00 p. m.", "Tarde: 1:00 p. m.–6:00 p. m."],
+    features: [
+      "Elección de mañana o tarde",
+      "Actividades correspondientes al turno",
+      "Requiere programación anticipada",
+      "Sujeto a disponibilidad",
     ],
-    ctaInterest: "Flexible",
+    ctaInterest: "Vitalia Flexible",
   },
   {
     id: "ocasional",
     title: "Vitalia Ocasional",
-    subtitle: "Una alternativa para necesidades puntuales o para conocer el servicio.",
-    price: "Medio día: S/55 · Día completo: S/90",
-    periodicity: "Según disponibilidad",
+    subtitle: "Atención mediante reserva; medio turno o día completo.",
+    price: "Medio turno: S/55 · Día completo: S/90",
+    periodicity: "Según reserva",
+    schedule: ["Mañana: 8:00 a. m.–1:00 p. m.", "Tarde: 1:00 p. m.–6:00 p. m.", "Día completo: 8:00 a. m.–6:00 p. m."],
     features: [
-      "Actividades correspondientes al horario",
-      "Alimentación correspondiente al turno",
-      "Acompañamiento durante la estancia",
-      "Enfermería básica",
-      "Comunicación ante cualquier incidencia",
-    ],
-    conditions: [
       "Requiere evaluación inicial",
       "Requiere reserva previa",
-      "Está sujeto a disponibilidad",
-      "No garantiza una plaza permanente",
+      "Sujeto a disponibilidad",
     ],
-    ctaInterest: "Día de experiencia",
+    ctaInterest: "Vitalia Ocasional",
   },
 ];
 
 export function Pricing() {
   const ref = useRef<HTMLElement>(null);
+  const [selectedShifts, setSelectedShifts] = useState<Record<string, string>>({ medio: "Mañana" });
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState<PlanDef | null>(null);
+  const lastFocused = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const node = ref.current;
@@ -153,37 +120,33 @@ export function Pricing() {
     return () => observer.disconnect();
   }, []);
 
+  // Modal escape handler must be registered unconditionally so hooks order is stable
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && modalOpen) {
+        setModalOpen(false);
+        if (lastFocused.current) lastFocused.current.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [modalOpen]);
+
   if (!siteConfig.showPricing) return null;
 
   const openContactFor = (interest: string) => {
     track("plan_select", { plan: interest });
-    const anchor = document.querySelector<HTMLAnchorElement>("a[href='#contacto']");
-    // Scroll to contact section
     const contacto = document.getElementById("contacto");
-    if (contacto) {
-      contacto.scrollIntoView({ behavior: "smooth", block: "center" });
-    } else if (anchor) {
-      anchor.click();
-    }
-    // preselect the interest in the form
+    const anchor = document.querySelector<HTMLAnchorElement>("a[href='#contacto']");
+    if (contacto) contacto.scrollIntoView({ behavior: "smooth", block: "center" });
+    else if (anchor) anchor.click();
+
     setTimeout(() => {
       const select = document.querySelector<HTMLSelectElement>("#interest");
       if (select) {
-        // Map long names to the form options where needed
-        const mapping: Record<string, string> = {
-          "Vitalia Integral": "Vitalia Integral",
-          "Mañana": "Mañana",
-          "Tarde": "Tarde",
-          "Flexible": "Flexible",
-          "Día de experiencia": "Día de experiencia",
-          "Solicitar orientación": "Solicitar más información",
-        };
-        const v = mapping[interest] ?? interest;
-        select.value = v;
-        // focus first required empty field
-        const first = document.querySelector<HTMLElement>(
-          "#contacto [required]:not([value])",
-        );
+        // Set the select value directly to match the new labels in the form
+        select.value = interest;
+        const first = document.querySelector<HTMLElement>("#contacto [required]:not([value=''])");
         if (first) first.focus();
       }
     }, 300);
@@ -231,37 +194,90 @@ export function Pricing() {
                   </li>
                 ))}
               </ul>
-              {p.conditions && (
-                <div className="plan-conditions">
-                  {p.conditions.map((c) => (
-                    <div key={c} className="condition-item">
-                      {c}
-                    </div>
-                  ))}
-                </div>
+
+              {p.id === "medio" && (
+                <fieldset className="field-turno" aria-label="Elige turno">
+                  <legend className="visually-hidden">Elige turno</legend>
+                  <label className="turno-option">
+                    <input
+                      type="radio"
+                      name={`turno-${p.id}`}
+                      defaultChecked
+                      onChange={() => setSelectedShifts({ ...selectedShifts, [p.id]: "Mañana" })}
+                    />
+                    <span>Turno mañana — 8:00 a. m.–1:00 p. m.</span>
+                  </label>
+                  <label className="turno-option">
+                    <input
+                      type="radio"
+                      name={`turno-${p.id}`}
+                      onChange={() => setSelectedShifts({ ...selectedShifts, [p.id]: "Tarde" })}
+                    />
+                    <span>Turno tarde — 1:00 p. m.–6:00 p. m.</span>
+                  </label>
+                </fieldset>
               )}
+
               <div className="plan-actions">
                 <button
                   className={`btn ${p.highlight ? "btn-primary" : "btn-secondary"}`}
-                  onClick={() => openContactFor(p.ctaInterest ?? p.title)}
-                  aria-label={`Solicitar información sobre ${p.title}`}
+                  onClick={() => {
+                    let interest = p.ctaInterest ?? p.title;
+                    if (p.id === "medio") {
+                      const turno = selectedShifts[p.id] ?? "Mañana";
+                      interest = `Vitalia Medio Turno – ${turno}`;
+                    } else if (p.id === "ocasional") {
+                      interest = "Vitalia Ocasional – Medio turno";
+                    }
+                    openContactFor(interest);
+                  }}
+                  aria-label={`Solicitar ${p.title}`}
                   style={{ minWidth: 160 }}
                 >
-                  Solicitar este plan
+                  Solicitar
                 </button>
-                {!p.highlight && (
-                  <button
-                    className="btn btn-ghost"
-                    onClick={() => openContactFor("Solicitar orientación")}
-                    aria-label={`Solicitar orientación sobre ${p.title}`}
-                  >
-                    No sé qué plan elegir
-                  </button>
-                )}
+                <button
+                  className="btn btn-ghost"
+                  onClick={(e) => {
+                    lastFocused.current = e.currentTarget as HTMLElement;
+                    setModalContent(p);
+                    setModalOpen(true);
+                  }}
+                  aria-label={`Mayor información sobre ${p.title}`}
+                >
+                  Mayor información
+                </button>
               </div>
             </article>
           ))}
         </div>
+
+        {/* Modal: mayor información */}
+        {modalOpen && modalContent && (
+          <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label={`Información: ${modalContent.title}`}>
+            <div className="modal" role="document">
+              <header>
+                <h3>{modalContent.title}</h3>
+                <button className="modal-close" onClick={() => { setModalOpen(false); if (lastFocused.current) lastFocused.current.focus(); }} aria-label="Cerrar">✕</button>
+              </header>
+              <div className="modal-body">
+                <p className="muted">{modalContent.subtitle}</p>
+                <ul>
+                  {modalContent.features.map((f) => (
+                    <li key={f}>{f}</li>
+                  ))}
+                </ul>
+                {modalContent.conditions && (
+                  <div className="muted">
+                    {modalContent.conditions.map((c) => (
+                      <div key={c}>{c}</div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="compare-block">
           <h3>Compara nuestros planes</h3>
@@ -282,37 +298,62 @@ export function Pricing() {
                 </tr>
               </thead>
               <tbody>
-                {[
-                  ["Lunes a sábado", "incl", "incl", "incl", "según programación", "según programación"],
-                  ["Jornada completa", "incl", "No incluido", "No incluido", "No incluido", "No incluido"],
-                  ["Turno de mañana", "incl", "incl", "No incluido", "opcional", "opcional"],
-                  ["Turno de tarde", "incl", "No incluido", "incl", "opcional", "opcional"],
-                  ["Actividades físicas", "incl", "incl", "incl", "incl", "incl"],
-                  ["Estimulación cognitiva", "incl", "incl", "incl", "incl", "incl"],
-                  ["Actividades sociales", "incl", "incl", "incl", "incl", "incl"],
-                  ["Alimentación", "incl", "incl", "incl", "incl", "incl"],
-                  ["Enfermería básica", "incl", "incl", "incl", "incl", "incl"],
-                  ["Recordatorio de medicamentos", "incl", "incl", "incl", "incl", "incl"],
-                  ["Comunicación con la familia", "incl", "incl", "incl", "incl", "incl"],
-                  ["Salidas programadas", "incl", "No incluido", "No incluido", "No incluido", "No incluido"],
-                  ["Reserva de plaza mensual", "sí", "sí", "sí", "sujeto a disponibilidad", "sujeto a disponibilidad"],
-                  ["Sujeto a disponibilidad", "No", "No", "No", "Sí", "Sí"],
-                ].map((row) => (
-                  <tr key={String(row[0])}>
-                    <th scope="row">{row[0]}</th>
-                    {row.slice(1).map((cell, i) => (
-                      <td key={i}>
-                        {cell === "incl" ? (
-                          <span className="check">Incluido</span>
-                        ) : cell === "opcional" ? (
-                          <span>Según programación</span>
-                        ) : (
-                          <span className="muted">{cell}</span>
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
+                <tr>
+                  <th scope="row">Precio</th>
+                  <td>{PLANS[0].price}</td>
+                  <td>{PLANS[1].price}</td>
+                  <td>{PLANS[2].price}</td>
+                  <td>{PLANS[3].price}</td>
+                </tr>
+                <tr>
+                  <th scope="row">Frecuencia</th>
+                  <td>{PLANS[0].periodicity}</td>
+                  <td>{PLANS[1].periodicity}</td>
+                  <td>{PLANS[2].periodicity}</td>
+                  <td>{PLANS[3].periodicity}</td>
+                </tr>
+                <tr>
+                  <th scope="row">Horario</th>
+                  <td>{PLANS[0].schedule?.[0]}</td>
+                  <td>Mañana o tarde</td>
+                  <td>Mañana o tarde</td>
+                  <td>Medio turno o día completo</td>
+                </tr>
+                <tr>
+                  <th scope="row">Actividades grupales</th>
+                  <td><Check color="#176B73" size={20} aria-hidden /><span className="visually-hidden">Incluido</span></td>
+                  <td><Check color="#176B73" size={20} aria-hidden /><span className="visually-hidden">Incluido</span></td>
+                  <td><Check color="#176B73" size={20} aria-hidden /><span className="visually-hidden">Incluido</span></td>
+                  <td><Check color="#176B73" size={20} aria-hidden /><span className="visually-hidden">Incluido</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Alimentación</th>
+                  <td>Jornada completa</td>
+                  <td>Según turno</td>
+                  <td>Según turno</td>
+                  <td>Según estancia</td>
+                </tr>
+                <tr>
+                  <th scope="row">Enfermería básica</th>
+                  <td><Check color="#176B73" size={20} aria-hidden /><span className="visually-hidden">Incluido</span></td>
+                  <td><Check color="#176B73" size={20} aria-hidden /><span className="visually-hidden">Incluido</span></td>
+                  <td><Check color="#176B73" size={20} aria-hidden /><span className="visually-hidden">Incluido</span></td>
+                  <td><Check color="#176B73" size={20} aria-hidden /><span className="visually-hidden">Incluido</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Comunicación familiar</th>
+                  <td><Check color="#176B73" size={20} aria-hidden /><span className="visually-hidden">Incluido</span></td>
+                  <td><Check color="#176B73" size={20} aria-hidden /><span className="visually-hidden">Incluido</span></td>
+                  <td><Check color="#176B73" size={20} aria-hidden /><span className="visually-hidden">Incluido</span></td>
+                  <td><span className="muted">Ante incidencias</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Reserva mensual de plaza</th>
+                  <td><Check color="#176B73" size={20} aria-hidden /><span className="visually-hidden">Incluido</span></td>
+                  <td><Check color="#176B73" size={20} aria-hidden /><span className="visually-hidden">Incluido</span></td>
+                  <td><Calendar color="#6B7280" size={20} aria-hidden /><span className="visually-hidden">Según programación</span></td>
+                  <td><X color="#6B7280" size={20} aria-hidden /><span className="visually-hidden">No incluido</span></td>
+                </tr>
               </tbody>
             </table>
           </div>
