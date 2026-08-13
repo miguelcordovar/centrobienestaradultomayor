@@ -2,7 +2,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, X } from "lucide-react";
 import { CalendarDays, Clock3, Utensils, Users } from "@/components/icons";
-import Link from "next/link";
 import PLANS_DATA, { PlanData } from "@/lib/plans";
 import { track } from "./analytics";
 import { siteConfig } from "@/lib/config";
@@ -87,13 +86,6 @@ export function Pricing() {
                 <strong>{p.price}</strong>
                 {p.priceDetail && <span className="periodicity">{p.priceDetail}</span>}
               </div>
-              <div className="plan-schedule">
-                {p.schedule?.map((s) => (
-                  <div key={s} className="schedule-line">
-                    {s}
-                  </div>
-                ))}
-              </div>
               <ul className="plan-features">
                 <li>
                   <CalendarDays aria-hidden className="ic" />
@@ -103,12 +95,6 @@ export function Pricing() {
                   <Clock3 aria-hidden className="ic" />
                   <span>
                     {p.basicFeatures[1]}
-                    {p.id === "medio" && (
-                      <div className="small-schedules">
-                        <div className="muted">Mañana: 8:00 a. m.–1:00 p. m.</div>
-                        <div className="muted">Tarde: 1:00 p. m.–6:00 p. m.</div>
-                      </div>
-                    )}
                   </span>
                 </li>
                 <li>
@@ -121,32 +107,10 @@ export function Pricing() {
                 </li>
               </ul>
 
-              {p.id === "medio" && (
-                <fieldset className="field-turno" aria-label="Elige turno">
-                  <legend className="visually-hidden">Elige turno</legend>
-                  <label className="turno-option">
-                    <input
-                      type="radio"
-                      name={`turno-${p.id}`}
-                      defaultChecked
-                      onChange={() => setSelectedShifts({ ...selectedShifts, [p.id]: "Mañana" })}
-                    />
-                    <span>Turno mañana — 8:00 a. m.–1:00 p. m.</span>
-                  </label>
-                  <label className="turno-option">
-                    <input
-                      type="radio"
-                      name={`turno-${p.id}`}
-                      onChange={() => setSelectedShifts({ ...selectedShifts, [p.id]: "Tarde" })}
-                    />
-                    <span>Turno tarde — 1:00 p. m.–6:00 p. m.</span>
-                  </label>
-                </fieldset>
-              )}
 
               <div className="plan-actions">
                 <button
-                  className={`btn ${p.badge ? "btn-primary" : "btn-secondary"}`}
+                  className={`btn ${p.badge ? "btn-primary" : "btn-secondary"} plan-button`}
                   onClick={() => {
                     let interest = p.name;
                     if (p.id === "medio") {
@@ -158,13 +122,9 @@ export function Pricing() {
                     openContactFor(interest);
                   }}
                   aria-label={`Contratar ${p.name}`}
-                  style={{ minWidth: 160 }}
                 >
                   Contratar
                 </button>
-                <Link href={`/planes/${p.slug}`} className="btn btn-ghost" aria-label={`Ver más sobre ${p.name}`}>
-                  Ver más
-                </Link>
               </div>
             </article>
           ))}

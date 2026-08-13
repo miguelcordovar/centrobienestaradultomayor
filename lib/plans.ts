@@ -33,7 +33,7 @@ export const PLANS: PlanData[] = [
       "Lunes a sábado",
       "8:00 a. m.–6:00 p. m.",
       "Desayuno, almuerzo y merienda",
-      "Reserva mensual completa",
+      "Reserva mensual",
     ],
     includedServices: [
       "Actividades físicas, cognitivas, sociales y recreativas",
@@ -61,7 +61,7 @@ export const PLANS: PlanData[] = [
       "Lunes a sábado",
       "Mañana o tarde",
       "Según el turno",
-      "Reserva mensual de medio turno",
+      "Reserva mensual",
     ],
     includedServices: [
       "Activación física",
@@ -108,7 +108,7 @@ export const PLANS: PlanData[] = [
     badge: null,
     basicFeatures: [
       "Según necesidad",
-      "Medio turno o día completo",
+      "Sujeto a Programación",
       "Según la estancia",
       "Sujeta a disponibilidad",
     ],
