@@ -64,7 +64,7 @@ export function Gallery() {
           >
             <Image
               src={assetPath(`/images/${slug}.webp`)}
-              alt={`${title} conceptual de VivaMayor: ${caption}`}
+              alt={`${title} conceptual de Vitalia: ${caption}`}
               fill
               sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 33vw"
             />

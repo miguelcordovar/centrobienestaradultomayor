@@ -6,7 +6,10 @@ import { pagePath } from "@/lib/config";
 
 type Errors = Record<string, string>;
 const interests = [
-  "Jornada completa",
+  "Vitalia Integral",
+  "Mañana",
+  "Tarde",
+  "Flexible",
   "Día de experiencia",
   "Transporte",
   "Solicitar más información",
@@ -57,6 +60,9 @@ export function ContactForm() {
     const payload = {
       ...data,
       age: Number(data.age),
+      days: String(data.days ?? ""),
+      startDate: String(data.startDate ?? ""),
+      transportNeed: String(data.transportNeed ?? "No sé todavía"),
       consent: data.consent === "on",
       newsletter: data.newsletter === "on",
       source: location.href,
@@ -102,7 +108,7 @@ export function ContactForm() {
     return (
       <div className="form-success" role="status">
         <span aria-hidden="true">✓</span>
-        <h3>¡Gracias por contactar a VivaMayor!</h3>
+        <h3>¡Gracias por contactar a Vitalia!</h3>
         <p>
           Hemos recibido tu solicitud. Nuestro equipo se comunicará contigo
           dentro del horario de atención.
@@ -225,6 +231,37 @@ export function ContactForm() {
         </select>
         {fieldError("interest")}
       </div>
+      <div className="field">
+        <label htmlFor="days">Días preferidos *</label>
+        <input
+          id="days"
+          name="days"
+          placeholder="Ej. Lunes y miércoles"
+          required
+          aria-invalid={!!errors.days}
+        />
+        {fieldError("days")}
+      </div>
+      <div className="field">
+        <label htmlFor="startDate">Fecha estimada de inicio *</label>
+        <input
+          id="startDate"
+          name="startDate"
+          type="date"
+          required
+          aria-invalid={!!errors.startDate}
+        />
+        {fieldError("startDate")}
+      </div>
+      <div className="field full">
+        <label htmlFor="transportNeed">¿Necesitas transporte? *</label>
+        <select id="transportNeed" name="transportNeed" defaultValue="No sé todavía" required>
+          <option value="Sí">Sí</option>
+          <option value="No">No</option>
+          <option value="No sé todavía">No sé todavía</option>
+        </select>
+        {fieldError("transportNeed")}
+      </div>
       <div className="field full">
         <label htmlFor="contactTime">
           ¿En qué horario prefieres que te contactemos? *
@@ -256,7 +293,7 @@ export function ContactForm() {
       <label className="check full">
         <input type="checkbox" name="consent" required />
         <span>
-          Acepto el tratamiento de mis datos para que VivaMayor responda mi
+          Acepto el tratamiento de mis datos para que Vitalia responda mi
           solicitud. He leído la{" "}
           <a href={pagePath("/privacidad/")}>Política de privacidad</a>. *
         </span>
@@ -266,7 +303,7 @@ export function ContactForm() {
         <input type="checkbox" name="newsletter" />
         <span>
           Deseo inscribirme en la lista de familias interesadas y recibir
-          novedades de VivaMayor.
+          novedades de Vitalia.
         </span>
       </label>
       {turnstileKey && (

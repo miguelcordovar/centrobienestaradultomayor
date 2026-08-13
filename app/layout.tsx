@@ -1,18 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Lora } from "next/font/google";
 import { siteConfig } from "@/lib/config";
 import "./globals.css";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-body",
-  display: "swap",
-});
-const lora = Lora({
-  subsets: ["latin"],
-  variable: "--font-title",
-  display: "swap",
-});
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -20,44 +8,44 @@ export const viewport: Viewport = {
 };
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
-  title: "VivaMayor | Centro de Bienestar para Adultos Mayores en Piura",
+  title: "Vitalia | Centro de Bienestar para Personas Mayores en Piura",
   description:
-    "Centro diurno de bienestar para adultos mayores en Piura, con alimentación, actividades, acompañamiento y enfermería básica. Solicita información o agenda una visita.",
+    "Centro diurno para personas mayores en Piura. Actividades, alimentación, enfermería básica y acompañamiento de lunes a sábado, con planes flexibles desde media jornada.",
   keywords: [
-    "Centro de día para adultos mayores en Piura",
-    "Centro de bienestar para adultos mayores",
-    "Cuidado diurno del adulto mayor",
+    "Centro diurno para personas mayores en Piura",
+    "Centro de bienestar para personas mayores",
     "Actividades para adultos mayores en Piura",
-    "Acompañamiento para adultos mayores",
+    "Acompañamiento para personas mayores",
+    "Vitalia Piura",
   ],
   alternates: { canonical: siteConfig.url },
   openGraph: {
     type: "website",
     locale: "es_PE",
-    title: "VivaMayor | Centro de Bienestar en Piura",
-    description: "Bienestar, compañía y tranquilidad cada día.",
+    title: "Vitalia Centro de Bienestar",
+    description: "Más vida en cada día. Bienestar para ellos y tranquilidad para la familia.",
     url: siteConfig.url,
     images: [
       {
-        url: `${siteConfig.url}/images/hero-vivamayor.webp`,
+        url: `${siteConfig.url}/images/hero-vitalia.webp`,
         width: 1400,
         height: 700,
-        alt: "Personas adultas mayores compartiendo una actividad en VivaMayor",
+        alt: "Personas mayores compartiendo actividades en Vitalia, centro de bienestar en Piura",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "VivaMayor Centro de Bienestar",
-    description: "Una vida activa, acompañada y cerca de la familia.",
-    images: [`${siteConfig.url}/images/hero-vivamayor.webp`],
+    title: "Vitalia Centro de Bienestar",
+    description: "Más vida en cada día. Bienestar para ellos y tranquilidad para la familia.",
+    images: [`${siteConfig.url}/images/hero-vitalia.webp`],
   },
 };
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es" className={`${inter.variable} ${lora.variable}`}>
+    <html lang="es">
       <body>{children}</body>
     </html>
   );

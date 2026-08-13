@@ -10,8 +10,8 @@ const links = [
   ["Inicio", "#inicio"],
   ["Nosotros", "#nosotros"],
   ["Servicios", "#servicios"],
-  ["Un día en VivaMayor", "#un-dia"],
-  ["Para quién es", "#para-quien"],
+  ["Un día en Vitalia", "#un-dia"],
+  ["Planes", "#plan"],
   ["Preguntas frecuentes", "#preguntas"],
   ["Contacto", "#contacto"],
 ];
@@ -29,13 +29,13 @@ export function Header() {
         Saltar al contenido
       </a>
       <div className="nav-wrap">
-        <Link href="#inicio" aria-label="VivaMayor, ir al inicio">
+        <Link href="#inicio" aria-label="Vitalia, ir al inicio">
           <Image
             className="nav-logo"
-            src={assetPath("/logo-vivamayor.webp")}
-            alt="VivaMayor Centro de Bienestar"
-            width={340}
-            height={180}
+            src={assetPath("/vitalia-centro-bienestar-transparente.png")}
+            alt="Vitalia Centro de Bienestar"
+            width={420}
+            height={220}
             priority
           />
         </Link>

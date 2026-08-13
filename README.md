@@ -1,4 +1,4 @@
-# VivaMayor — Centro de Bienestar
+# Vitalia — Centro de Bienestar
 
 Landing page en Next.js para captar familias interesadas en un centro diurno de bienestar para personas adultas mayores en Piura.
 
