@@ -870,8 +870,8 @@ summary:focus-visible {
 /* Compare icons sizing */
 .compare-table svg { vertical-align:middle; }
 
-/* Footer logo card: cream background */
-.logo-card { background: #FAF7F0; background-color: white; padding: 20px; border-radius: 14px; max-width: 350px; border: 1px solid rgba(255,255,255,0.15); }
+/* Footer logo card: white background */
+.logo-card { background-color: rgb(245,246,248); padding: 20px; border-radius: 14px; max-width: 350px; border: 1px solid rgba(255,255,255,0.15); }
 .footerBrandLogo { display:block; width:100%; max-width:350px; height:auto; object-fit:contain; }
 @media (max-width: 640px) { .logo-card { max-width: 280px; padding: 18px; } .footerBrandLogo { max-width:280px; } }
 .compare-block {
@@ -1121,7 +1121,7 @@ footer {
   align-items: start;
 }
 .footer-brand { max-width: 380px; }
-.logo-card { background: transparent; border-radius: 12px; padding: 0; display:block; }
+.logo-card { background-color: rgb(245,246,248); border-radius: 12px; padding: 0; display:block; }
 .footerBrandLogo { display:block; width:100%; max-width:380px; height:auto; object-fit:contain; }
 .footer-grid h2 {
   font-family: var(--font-body);
