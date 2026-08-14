@@ -40,23 +40,6 @@ export function Pricing() {
 
   if (!siteConfig.showPricing) return null;
 
-  const openContactFor = (interest: string) => {
-    track("plan_select", { plan: interest });
-    const contacto = document.getElementById("contacto");
-    const anchor = document.querySelector<HTMLAnchorElement>("a[href='#contacto']");
-    if (contacto) contacto.scrollIntoView({ behavior: "smooth", block: "center" });
-    else if (anchor) anchor.click();
-
-    setTimeout(() => {
-      const select = document.querySelector<HTMLSelectElement>("#interest");
-      if (select) {
-        // Set the select value directly to match the new labels in the form
-        select.value = interest;
-        const first = document.querySelector<HTMLElement>("#contacto [required]:not([value=''])");
-        if (first) first.focus();
-      }
-    }, 300);
-  };
 
   return (
     <section ref={ref} className="section plans-section" id="plan">
