@@ -16,7 +16,6 @@ const PLANS: PlanData[] = PLANS_DATA;
 
 export function Pricing() {
   const ref = useRef<HTMLElement>(null);
-  const [selectedShifts, setSelectedShifts] = useState<Record<string, string>>({ medio: "Mañana" });
 
   useEffect(() => {
     const node = ref.current;
@@ -113,12 +112,6 @@ export function Pricing() {
                   className={`btn ${p.badge ? "btn-primary" : "btn-secondary"} plan-button`}
                   onClick={() => {
                     let interest = p.name;
-                    if (p.id === "medio") {
-                      const turno = selectedShifts[p.id] ?? "Mañana";
-                      interest = `Vitalia Medio Turno – ${turno}`;
-                    } else if (p.id === "ocasional") {
-                      interest = "Vitalia Ocasional – Medio turno";
-                    }
                     openContactFor(interest);
                   }}
                   aria-label={`Contratar ${p.name}`}
