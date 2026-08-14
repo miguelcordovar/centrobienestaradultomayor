@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Check, X } from "lucide-react";
 import { CalendarDays, Clock3, Utensils, Users } from "@/components/icons";
 import PLANS_DATA, { PlanData } from "@/lib/plans";
@@ -110,10 +110,6 @@ export function Pricing() {
               <div className="plan-actions">
                 <button
                   className={`btn ${p.badge ? "btn-primary" : "btn-secondary"} plan-button`}
-                  onClick={() => {
-                    let interest = p.name;
-                    openContactFor(interest);
-                  }}
                   aria-label={`Contratar ${p.name}`}
                 >
                   Contratar
