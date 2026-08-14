@@ -40,7 +40,7 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Configurar GitHub Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Resolver URL pública y base path
         env:
@@ -77,7 +77,7 @@ jobs:
         run: touch out/.nojekyll
 
       - name: Subir artefacto de Pages
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: ./out
 
